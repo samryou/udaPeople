@@ -141,7 +141,7 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - install_AWScli
+      - install_awscli
       - run:
           name: Install tar and gzip
           command: apt install tar gzip
