@@ -200,6 +200,7 @@ jobs:
           command: |
             sudo apt -y update
             sudo apt -y install ansible
+            export ANSIBLE_HOST_KEY_CHECKING=False
       - run:
           name: Configure server
           command: |
