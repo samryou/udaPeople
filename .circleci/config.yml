@@ -188,25 +188,25 @@ jobs:
 
   configure-infrastructure:
     docker:
-      cimg/base:stable
+      - cimg/base:stable
     steps:
       - checkout
-      # - add_ssh_keys:
-      #     fingerprnits: ["07:8b:e6:7a:6a:72:b4:94:b2:6b:bf:68:1a:bb:1b:19"]
-      # - attach_workspace:
-      #     at: ~/
-      # - run:
-      #     name: Install dependencies
-      #     command: |
-      #       sudo apt -y update
-      #       sudo apt -y install ansible
-      # - run:
-      #     name: Configure server
-      #     command: |
-      #       cd .circleci/ansible
-      #       cat inventory.txt
-      #       ansible-playbook -i inventory.txt configure-server.yml
-      # - destroy-environment     
+      - add_ssh_keys:
+          fingerprnits: ["07:8b:e6:7a:6a:72:b4:94:b2:6b:bf:68:1a:bb:1b:19"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt -y update
+            sudo apt -y install ansible
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible
+            cat inventory.txt
+            ansible-playbook -i inventory.txt configure-server.yml
+      - destroy-environment     
 
 #   run-migrations:
 #     docker:
