@@ -191,6 +191,7 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
+      #- install_awscli # needed for rollback in case of failure (destroy-environment) therewise i delete the created resources manually
       - add_ssh_keys:
           fingerprnits: ["b4:7a:d5:92:0d:df:2d:34:ee:70:fe:41:30:0c:f1:c2:82:a1:c7:06"]
       - attach_workspace:
@@ -206,6 +207,8 @@ jobs:
           command: |
             cd .circleci/ansible
             cat inventory.txt
+            echo "[defaults]" >> /etc/ansible/ansible.cfg
+            echo "host_key_checking = False" >> /etc/ansible/ansible.cfg
             ansible-playbook -i inventory.txt configure-server.yml
       - destroy-environment     
 
