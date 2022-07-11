@@ -16,24 +16,23 @@ commands:
             aws s3 rm s3://udapeople-<< parameters.Workflow_ID >> --recursive
             aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.Workflow_ID >>
 
-#   revert-migrations:
-#     description: Revert the last migration if successfully run in the current workflow.
-#     parameters:
-#       # Add parameter here     
-#     steps:
-#       - run:
-#           name: Revert migrations
-#           # Add when this will run
-#           command: |
-#             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-#             SUCCESS = 1
-#             if(( $SUCCESS==1 )); 
-#             then
-#             #  cd ~/project/backend
-#             #  npm install
-#             #  Add revert code here. You can find this in the Getting Started section.
-#               exit 1
-#             fi
+  revert-migrations:
+    description: Revert the last migration if successfully run in the current workflow.
+    parameters:
+      Workflow_ID:
+        type: string   
+    steps:
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            SUCCESS = $(curl --insecure https://kvdb.io/${KVDB}/migration_<< parameters.Workflow_ID >>)
+            if(( $SUCCESS==1 )); 
+            then
+              cd ~/project/backend
+              npm install
+              npm run migration:revert
+            fi
             
   install_awscli:
     description: installing AWS CLI tool
@@ -45,16 +44,26 @@ commands:
             unzip awscliv2.zip
             sudo ./aws/install
 
-  # install_ansible:
-  #   description: installing Ansible version 2
-  #   steps:
-  #     - run:
-  #         name: install ansible
-  #         commands: |
-  #           sudo apt update
-  #           sudo apt install software-properties-common
-  #           sudo add-apt-repository --yes --update ppa:ansible/ansible
-  #           sudo apt install ansible
+  install_nodejs:
+    description: installing Node.js to ubuntu based environments
+    steps:
+      - run:
+          name: install Node.js
+          command: |
+            curl -fsSL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+            sudo apt install -y node.js
+
+
+  install_ansible:
+    description: installing Ansible version 2
+    steps:
+      - run:
+          name: install ansible
+          commands: |
+            sudo apt update
+            sudo apt -y install software-properties-common
+            sudo add-apt-repository --yes --update ppa:ansible/ansible
+            sudo apt install ansible
 
 jobs:
   build-frontend:
@@ -191,7 +200,7 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
-      #- install_awscli # needed for rollback in case of failure (destroy-environment) therewise i delete the created resources manually
+      - install_awscli # needed for rollback in case of failure (destroy-environment) therewise i delete the created resources manually
       - add_ssh_keys:
           fingerprnits: ["b4:7a:d5:92:0d:df:2d:34:ee:70:fe:41:30:0c:f1:c2:82:a1:c7:06"]
       - attach_workspace:
@@ -200,8 +209,9 @@ jobs:
           name: Install dependencies
           command: |
             sudo apt -y update
+            sudo apt -y install software-properties-common
+            sudo add-apt-repository --yes --update ppa:ansible/ansible
             sudo apt -y install ansible
-            export ANSIBLE_HOST_KEY_CHECKING=False
       - run:
           name: Configure server
           command: |
@@ -210,22 +220,27 @@ jobs:
             ansible-playbook -i inventory.txt configure-server.yml
       - destroy-environment     
 
-#   run-migrations:
-#     docker:
-#       # Docker image here that supports NodeJS
-#     steps:
-#       # Checkout code from git
-#       - run:
-#           name: Run migrations
-#           command: |
-#             # Your code here
-#             exit 1
-#       - run:
-#           name: Send migration results to memstash
-#           command: |
-#             # Your code here
-#             exit 1
-#      # Here's where you will add some code to rollback on failure      
+  run-migrations:
+    docker:
+      - image: cimg/node:13.8.0
+    steps:
+      - checkout
+      - install_awscli 
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            npm install
+            npm run migrations > migrations_dump.txt
+      - run:
+          name: Send migration results to KVDB
+          command: |
+            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
+            then
+              curl https://kvdb.io/${KVDB}/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+            fi
+      - revert-migrations
+      - destroy-environment    
 
 #   deploy-frontend:
 #     docker:
