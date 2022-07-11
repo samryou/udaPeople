@@ -249,7 +249,8 @@ jobs:
             then
               curl https://kvdb.io/${KVDB}/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi
-      - revert-migrations
+      - revert-migrations:
+          Workflow_ID: "${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment    
 
 #   deploy-frontend:
