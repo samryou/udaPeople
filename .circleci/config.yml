@@ -54,16 +54,16 @@ commands:
             sudo apt install -y node.js
 
 
-  install_ansible:
-    description: installing Ansible version 2
-    steps:
-      - run:
-          name: install ansible
-          commands: |
-            sudo apt update
-            sudo apt -y install software-properties-common
-            sudo add-apt-repository --yes --update ppa:ansible/ansible
-            sudo apt install ansible
+  # install_ansible:
+  #   description: installing Ansible
+  #   steps:
+  #     - run:
+  #         name: install ansible
+  #         commands: |
+  #           sudo apt update
+  #           sudo apt -y install software-properties-common
+  #           sudo add-apt-repository --yes --update ppa:ansible/ansible
+  #           sudo apt install ansible
 
 jobs:
   build-frontend:
