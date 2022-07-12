@@ -1,0 +1,31 @@
+---
+- name: "Create backend directory"
+  file:
+    path: ~/backend-app
+    state: directory
+
+- name: "unzip backend files"
+  unarchive:
+    src: artifact.tar.gz
+    dest: ~/backend-app
+
+- name: "install dependencies"
+  shell: |
+    cd ~/backend-app
+    npm i
+
+- name: "Run app with PM2"
+  shell: |
+    cd ~/backend-app/dist
+    pm2 stop default
+    pm2 start main.js
+  register: app_output
+
+- name: "print output"
+  debug:
+    msg: "{{ app_output.stdout_lines }}"
+
+- name: "start PM2 as a service"
+  become: true
+  shell: |
+    env PATH=$PATH:/usr/local/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu
