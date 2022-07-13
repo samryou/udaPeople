@@ -264,12 +264,12 @@ jobs:
       - checkout
       - install_awscli
       - install_nodejs
-      - restore_cache:
-          keys: [front_deps]
+      # - restore_cache:
+      #     keys: [front_deps]
       - run:
           name: Install dependencies
           command: |
-            ch frontend
+            cd frontend
             npm install
       - run:
           name: Get backend url
@@ -304,8 +304,8 @@ jobs:
           fingerprnits: ["b4:7a:d5:92:0d:df:2d:34:ee:70:fe:41:30:0c:f1:c2:82:a1:c7:06"]
       - attach_workspace:
           at: ~/
-      - restore_cache:
-          key: [backend-deps]
+      # - restore_cache:
+      #     key: [backend-deps]
       - run:
           name: Install dependencies
           command: |
