@@ -51,6 +51,7 @@ commands:
       - run:
           name: install Node.js
           command: |
+            sudo apt-get update -y
             curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
             sudo apt install -y node.js
             sudo npm install --global n
