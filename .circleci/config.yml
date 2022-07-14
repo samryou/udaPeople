@@ -296,15 +296,29 @@ jobs:
     steps:
       - checkout
       - install_awscli 
-      - install_ansible
       - add_ssh_keys:
           fingerprints: ["b4:7a:d5:92:0d:df:2d:34:ee:70:fe:41:30:0c:f1:c2:82:a1:c7:06"]
       - attach_workspace:
           at: ~/
-      # - restore_cache:
-      #     key: [backend-deps]
       - run:
           name: Install dependencies
+          command: |
+            sudo apt -y update
+            sudo apt -y install software-properties-common
+            sudo add-apt-repository --yes --update ppa:ansible/ansible
+            sudo apt -y install ansible
+      - run:
+          name: Configure server
+          environment:
+            - TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION')}}"
+            - TYPEORM_ENTITIES: "{{ lookup('env', 'TYPEORM_ENTITIES')}}"
+            - TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST')}}"
+            - TYPEORM_PORT: 5432
+            - TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME')}}"
+            - TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD')}}"
+            - TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE')}}"
+            - TYPEORM_MIGRATIONS: "{{ lookup('env', 'TYPEORM_MIGRATIONS')}}"
+            - TYPEORM_MIGRATIONS_DIR: "{{ lookup('env', 'TYPEORM_MIGRATIONS_DIR')}}"
           command: |
             cd backend
             npm install
