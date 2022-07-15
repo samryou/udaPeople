@@ -343,11 +343,12 @@ jobs:
 
   smoke-test:
     docker:
-      - image: cimg/base:stable
+      #- image: cimg/base:stable
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - install_awscli
-      - install_nodejs
+      #- install_nodejs
       - run:
           name: Backend smoke test.
           command: |
@@ -368,7 +369,7 @@ jobs:
             FRONTEND_URL=http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.${AWS_DEFAULT_REGION}.amazonaws.com
             if curl -s $FRONTEND_URL | grep "Welcome"
             then
-              exit 0
+              exit 1
             else
               exit 1
             fi
