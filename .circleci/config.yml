@@ -357,8 +357,8 @@ jobs:
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text)
             export API_URL="http://${BACKEND_IP}:3030"
-            echo "Backend URL is $API_URL"
-            echo '$(curl -s "${API_URL}/api/status")''
+            echo "Backend URL is ${API_URL}/api/status"
+            echo '$(curl -s "${API_URL}/api/status")'
             if curl -s "${API_URL}/api/status" | grep "ok"
             then
               exit 0
@@ -381,11 +381,12 @@ jobs:
 
   cloudfront-update:
     docker:
-      - image: cimg/base:stable
+      # - image: cimg/base:stable
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - install_awscli
-      - install_nodejs
+      # - install_nodejs
       - run:
           name: save old workflow ID o kvdb
           command: |
