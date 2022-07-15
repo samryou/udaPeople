@@ -27,8 +27,8 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
-            SUCCESS = $(curl --insecure https://kvdb.io/${KVDB}/migration_<< parameters.Workflow_ID >>)
-            if(( $SUCCESS==1 )); 
+            SUCCESS=$(curl --insecure https://kvdb.io/${KVDB}/migration_<< parameters.Workflow_ID >>)
+            if(( $SUCCESS == 1 )); 
             then
               cd ~/project/backend
               npm install
@@ -358,7 +358,7 @@ jobs:
               --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "Backend URL is $API_URL"
-            if curl -s $API_URL/api/status | grep "ok"
+            if curl -s "${API_URL}/api/status" | grep "ok"
             then
               exit 0
             else 
