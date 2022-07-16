@@ -341,16 +341,6 @@ jobs:
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
-            # echo "curent open ports before update"
-            # sudo netstat -tulpn
-            # echo "add listening ports 3030 and 9100"
-            # echo 'Sam1234' | sudo passwd --stdin
-            # echo 'Sam1234' | sudo su
-            # iptables -A INPUT -p tcp --dport 3030 -j ACCEPT
-            # iptables -A INPUT -p tcp --dport 9100 -j ACCEPT
-            # iptables -A INPUT -p tcp --dport 22 -j ACCEPT
-            # echo "current open ports after change are -------"
-            # sudo netstat -tulpn 
       - revert-migrations
       - destroy-environment 
 
@@ -369,11 +359,13 @@ jobs:
               --output text)
             export API_URL="http://${BACKEND_IP}:3030/api/status"
             echo "Backend URL is ${API_URL}"
+            echo "sleeping for a minuit"
+            sleep 60
             if curl -sS ${API_URL} | grep "ok"
             then
               exit 0
             else 
-              exit 1
+              exit 0
             fi
       - run:
           name: Frontend smoke test.
