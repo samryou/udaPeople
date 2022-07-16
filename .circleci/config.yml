@@ -339,16 +339,11 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
             echo "curent open ports before update"
-            sudo netstat -tulpn
-            echo "Update IPtables"
-            sudo apt-get update
-            sudo apt-get install --only-upgrade iptables
-            echo "add listening ports 3030 and 9100"
-            sudo iptables -A INPUT -p tcp --dport 3030 -j ACCEPT
-            sudo iptables -A INPUT -p tcp --dport 9100 -j ACCEPT
-            sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+            sudo ufw status
+            echo "disable firewall"
+            sudo ufw disable
             echo "current open ports after change are -------"
-            sudo netstat -tulpn 
+            sudo ufw status
       - revert-migrations
       - destroy-environment 
 
