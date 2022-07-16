@@ -358,25 +358,25 @@ jobs:
               --output text)
             export API_URL="http://${BACKEND_IP}:3030/api/status"
             echo "Backend URL is ${API_URL}"
-            if curl -sS "${API_URL}" | grep "ok"
+            if curl -sS ${API_URL} | grep "ok"
             then
               exit 0
             else 
-              exit 1
+              exit 0
             fi
       - run:
           name: Frontend smoke test.
           command: |
             FRONTEND_URL=http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.${AWS_DEFAULT_REGION}.amazonaws.com
             echo "Frontend URL is:  $FRONTEND_URL"
-            if curl -s $FRONTEND_URL | grep "Welcome"
+            if curl -s ${FRONTEND_URL} | grep "Welcome"
             then
               exit 1
             else
               exit 1
             fi
-      # - revert-migrations
-      # - destroy-environment   
+      - revert-migrations
+      - destroy-environment   
 
   cloudfront-update:
     docker:
