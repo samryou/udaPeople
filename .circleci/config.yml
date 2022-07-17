@@ -310,7 +310,7 @@ jobs:
             npm run build
             # tar -czf artifact.tar.gz dist/* package*
             cd ..
-            tar -C backend -czvf artifact.tar.gz .
+            tar -C backend -czvf artifact.tar.gz /home/circleci/project/.circleci/ansible/files/
             # cd .circleci/ansible
             # cp backend/artifact.tar.gz .circleci/ansible/deploy/files
       - run:
