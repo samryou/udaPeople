@@ -205,18 +205,19 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
-      - install_awscli 
+      - install_awscli
+      - install_ansible
       - add_ssh_keys:
           fingerprints: ["30:28:6b:de:77:e1:7a:b5:bb:6c:57:85:73:2c:df:a0"]
       - attach_workspace:
           at: ~/
-      - run:
-          name: Install dependencies (Ansible)
-          command: |
-            sudo apt -y update
-            sudo apt -y install software-properties-common
-            sudo add-apt-repository --yes --update ppa:ansible/ansible
-            sudo apt -y install ansible
+      # - run:
+      #     name: Install dependencies (Ansible)
+      #     command: |
+      #       sudo apt -y update
+      #       sudo apt -y install software-properties-common
+      #       sudo add-apt-repository --yes --update ppa:ansible/ansible
+      #       sudo apt -y install ansible
       - run:
           name: Configure server
           command: |
@@ -244,15 +245,16 @@ jobs:
             then
               curl https://kvdb.io/${KVDB}/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi
-      - revert-migrations
       - destroy-environment    
 
   deploy-frontend:
     docker:
-      - image: cimg/node:13.8.0
+      # - image: cimg/node:13.8.0
+      - image: cimg/base:stable
     steps:
       - checkout
       - install_awscli
+      - install_nodejs
       - restore_cache:
           keys: [frontend-build]
       - run:
@@ -278,8 +280,8 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-      - revert-migrations
-      - destroy-environment      
+      - destroy-environment
+      - revert-migrations   
                     
   deploy-backend:
     docker:
@@ -289,6 +291,7 @@ jobs:
       - checkout
       - install_awscli 
       - install_nodejs
+      - install_ansible
       - add_ssh_keys:
           fingerprints: ["30:28:6b:de:77:e1:7a:b5:bb:6c:57:85:73:2c:df:a0"]
       - attach_workspace:
@@ -298,43 +301,28 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            sudo apt -y update
-            sudo apt -y install software-properties-common
-            sudo add-apt-repository --yes --update ppa:ansible/ansible
-            sudo apt -y install ansible
-      - run:
-          name: Configure server
-          environment:
-            - TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION')}}"
-            - TYPEORM_ENTITIES: "{{ lookup('env', 'TYPEORM_ENTITIES')}}"
-            - TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST')}}"
-            - TYPEORM_PORT: 5432
-            - TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME')}}"
-            - TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD')}}"
-            - TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE')}}"
-            - TYPEORM_MIGRATIONS: "{{ lookup('env', 'TYPEORM_MIGRATIONS')}}"
-            - TYPEORM_MIGRATIONS_DIR: "{{ lookup('env', 'TYPEORM_MIGRATIONS_DIR')}}"
-          command: |
             cd backend
             npm install
+      - run:
+          name: building backend Package
+          command: |
+            cd backend
+            npm i
+            npm run building
+            tar -czf artifact.tar.gz dist/* package*
+            cd ..
+            cp backend/artifact.tar.gz .circleci/ansible/deploy/files
       - run:
           name: Deploy backend
           command: |
             export TYPEORM_MIGRATIONS_DIR=./migrations
             export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
             export TYPEORM_MIGRATIONS=./migrations/*.ts
-            export ANSIBLE_HOST_KEY_CHECKING=False
-            cd backend
-            npm i
-            npm run build
-            cd ..
-            tar -C backend -czvf artifact.tar.gz .
             cd .circleci/ansible
-            echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
+      - destroy-environment
       - revert-migrations
-      - destroy-environment 
 
   smoke-test:
     docker:
@@ -395,8 +383,8 @@ jobs:
             --tags project=udapeople
             echo OldWorkflowID: "$OldWorkflowID"
             echo Current Workfloe ID: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - destroy-environment
       - revert-migrations
-      - destroy-environment  
 
   cleanup:
     docker:
