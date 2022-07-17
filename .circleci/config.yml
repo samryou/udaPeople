@@ -381,7 +381,7 @@ jobs:
 
             aws cloudformation deploy \
             --template-file .circleci/files/cloudfront.yml \
-            --stack-name "${OldWorkflowID}" \
+            --stack-name "cloudFrontStack" \
             --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"  \
             --tags project=udapeople
             echo OldWorkflowID: "$OldWorkflowID"
@@ -403,10 +403,6 @@ jobs:
               --no-paginate --output text)
             echo OldWorkflowID: "${OldWorkflowID}"
             echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
-
-            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-              --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
-            echo Stack names: "${STACKS[@]}" 
 
             if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
             then
